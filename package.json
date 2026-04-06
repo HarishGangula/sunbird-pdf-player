@@ -1,12 +1,27 @@
 {
-  "name": "sunbird-pdf-player-lit",
+  "name": "@project-sunbird/sunbird-pdf-player",
   "version": "0.0.1",
+  "description": "Sunbird PDF Player — Lit web component for rendering PDF content",
   "type": "module",
+  "keywords": ["sunbird", "pdf", "player", "web-component", "lit"],
+  "license": "MIT",
+  "files": [
+    "dist"
+  ],
+  "main":   "dist/sunbird-pdf-player.umd.cjs",
+  "module": "dist/sunbird-pdf-player.js",
+  "exports": {
+    ".": {
+      "import": "./dist/sunbird-pdf-player.js",
+      "require": "./dist/sunbird-pdf-player.umd.cjs"
+    },
+    "./dist/style.css": "./dist/style.css"
+  },
   "scripts": {
-    "dev": "vite",
-    "build": "tsc --noEmit && vite build",
-    "preview": "vite preview",
-    "test:e2e": "playwright test",
+    "dev":       "vite",
+    "build":     "tsc --noEmit && vite build",
+    "preview":   "vite preview",
+    "test:e2e":  "playwright test",
     "test:e2e:ui": "playwright test --ui"
   },
   "dependencies": {
