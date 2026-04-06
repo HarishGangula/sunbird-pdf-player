@@ -47,3 +47,5 @@ testem.log
 .DS_Store
 Thumbs.db
 /project-sunbird-sunbird-pdf-player-web-component-*
+/playwright-report
+/test-results
