@@ -1,442 +1,597 @@
-## The PDF player for the Sunbird!
+# Sunbird PDF Player
 
-The PDF player library is powered by Angular. This player is primarily designed to be used on Sunbird consumption platforms _(mobile app, web portal, offline desktop app)_ to drive reusability and maintainability, hence reducing the redundant development effort significantly, and it can be integrated with any platform irrespective of the platforms and the frontend frameworks. It is exported not only as an angular library but also as a web component. 
+A lightweight, framework-agnostic **web component** for rendering PDF content on Sunbird consumption platforms — web portal, mobile app (WebView), offline desktop app, React, Vue, Angular, or any plain-HTML page.
 
-## Getting started with integration steps
+Built with [Lit](https://lit.dev/), [PDF.js](https://mozilla.github.io/pdf.js/), and [Tailwind CSS](https://tailwindcss.com/). No Angular, no heavy framework — just a single ES module you drop in.
 
-The pdf player can be integrated as a web component and also as an angular library in angular application projects and it can also be integrated into any mobile framework as a web component.
+---
 
-# Use as web components	
-Any web based application can use this library as a web component. It accepts couple of inputs and triggers player and telemetry events back to the application.
+## Table of contents
 
-Follow below-mentioned steps to use it in plain javascript project:
+- [Features](#features)
+- [Quick start](#quick-start)
+- [Installation](#installation)
+- [Usage](#usage)
+  - [Plain HTML / Vanilla JS](#plain-html--vanilla-js)
+  - [Angular](#angular)
+  - [React](#react)
+  - [Mobile app (WebView)](#mobile-app-webview)
+- [Player configuration](#player-configuration)
+  - [Full config reference](#full-config-reference)
+  - [Metadata](#metadata)
+  - [Telemetry context](#telemetry-context)
+  - [Toolbar config](#toolbar-config)
+  - [Side menu config](#side-menu-config)
+- [Outputs](#outputs)
+  - [playerEvent](#playerevent)
+  - [telemetryEvent](#telemetryevent)
+- [External actions](#external-actions)
+- [Keyboard shortcuts](#keyboard-shortcuts)
+- [Theming with CSS custom properties](#theming-with-css-custom-properties)
+- [Development](#development)
+- [Release process](#release-process)
+- [CI / CD](#ci--cd)
 
-- Insert [library](https://github.com/Sunbird-Knowlg/sunbird-pdf-player/blob/release-5.5.0/web-component/sunbird-pdf-player.js) as below:
-	```javascript
-	<script type="text/javascript" src="sunbird-pdf-player.js"></script>
-	```
-- Update below script in index.html file 
-	```javascript
-      <script src="https://cdnjs.cloudflare.com/ajax/libs/reflect-metadata/0.1.13/Reflect.min.js"
-      integrity="sha512-jvbPH2TH5BSZumEfOJZn9IV+5bSwwN+qG4dvthYe3KCGC3/9HmxZ4phADbt9Pfcp+XSyyfc2vGZ/RMsSUZ9tbQ=="
-      crossorigin="anonymous" referrerpolicy="no-referrer"></script>
-	```
+---
 
-- Get sample playerConfig from here: [playerConfig](https://github.com/Sunbird-Knowlg/sunbird-pdf-player/blob/release-5.5.0/src/app/data.ts)
+## Features
 
-- Create a custom html element: `sunbird-pdf-player`
-	```javascript
-    const  pdfElement = document.createElement('sunbird-pdf-player');
-   ```
+- **Virtual rendering** — only visible pages (+ 2-page buffer) are rendered as canvases. Smooth performance on 500-page documents.
+- **Fit-to-width zoom** by default; user-adjustable from 50 % to 300 %
+- **Responsive** — works on any screen size; collapses controls on mobile
+- **Touch / swipe** — horizontal swipe triggers next/previous page
+- **Full keyboard navigation** — Arrow keys, Page Up/Down, +/−, Escape
+- **Config-driven toolbar** — show/hide zoom, rotate, page input, prev/next
+- **Side menu** — share, download, print, replay, exit (all individually togglable)
+- **CSS custom-property theming** — override colours from a parent portal or WebView without touching the component source
+- **Full telemetry** — start, end, impression, interact, heartbeat, error events via Sunbird Telemetry SDK
+- **PDF.js worker bundled locally** — no CDN dependency, works offline
 
-- Pass data using `player-config`
-	```javascript
-	pdfElement.setAttribute('player-config', JSON.stringify(playerConfig));
-	```
+---
 
-	**Note:** Attribute name should be in kebab-case regardless of the actual Attribute name used in the Angular app. The value of the attribute should be in **string** type, as web-component does not accept any objects or arrays.
+## Quick start
 
-- Listen for the output events: **playerEvent** and **telemetryEvent**
+```html
+<!DOCTYPE html>
+<html lang="en">
+<head>
+  <link rel="stylesheet" href="https://unpkg.com/@project-sunbird/sunbird-pdf-player/dist/style.css">
+</head>
+<body>
+  <sunbird-pdf-player id="player" style="display:block;width:100%;height:100vh;"></sunbird-pdf-player>
 
-	```javascript
-	pdfElement.addEventListener('playerEvent', (event) => {
-		console.log("On playerEvent", event);
-	});
-	pdfElement.addEventListener('telemetryEvent', (event) => {
-		console.log("On telemetryEvent", event);
-	});
-	```
-- Append this element to existing element
-	```javascript
-	const  myPlayer = document.getElementById("my-player");
-	myPlayer.appendChild(pdfPlayerElement);
-	```
-- Refer demo [example](https://github.com/Sunbird-Knowlg/sunbird-pdf-player/blob/release-5.5.0/web-component-demo/index.html)
+  <script type="module" src="https://unpkg.com/@project-sunbird/sunbird-pdf-player/dist/sunbird-pdf-player.js"></script>
+  <script>
+    document.getElementById('player').playerConfig = {
+      metadata: {
+        identifier: 'my-doc-001',
+        name: 'My Document',
+        artifactUrl: 'https://example.com/my-document.pdf'
+      }
+    };
+  </script>
+</body>
+</html>
+```
 
-- To run the demo project, use the following commands:
-	```bash
-  cd web-component-demo
-	npx http-server --cors .
-	```
-	open [http://127.0.0.1:8080/](http://127.0.0.1:8080/)
-	**Note:** Due to cors errors when you open the index.html from demo folder as file, it is recomanded to run a static server in it like [http-server](https://www.npmjs.com/package/http-server).
+---
 
-- ![demo](https://github.com/Sunbird-Knowlg/sunbird-pdf-player/blob/release-5.5.0/web-component-demo/pdf-player-wc.png)
-
-# Use as Web component  in the Angular app
-
-- Run command 
-  ```bash
-    npm i @project-sunbird/sunbird-pdf-player-web-component
-    npm i reflect-metadata
-  ```
-
-- Add these entries in angular json file inside assets, scripts and styles like below
-
-  ```bash
-            "assets": [
-              "src/favicon.ico",
-              "src/assets",
-              {
-                "glob": "**/*.*",
-                "input": "./node_modules/@project-sunbird/sunbird-pdf-player-web-component/assets",
-                "output": "/assets/"
-              }
-            ],
-            "styles": [
-              "src/styles.scss",
-              "node_modules/@project-sunbird/sunbird-pdf-player-web-component/styles.css"
-            ],
-            "scripts": [
-              "node_modules/reflect-metadata/Reflect.js",
-              "node_modules/@project-sunbird/sunbird-pdf-player-web-component/sunbird-pdf-player.js"
-            ]
-
-  ```
-
-- Import  CUSTOM_ELEMENTS_SCHEMA in app module and add it to the NgModule as part of schemas like below
-
-	```javascript
-  ...
-  import { CUSTOM_ELEMENTS_SCHEMA } from '@angular/core';
-  ...
-
-  @NgModule({
-    ...
-    schemas: [CUSTOM_ELEMENTS_SCHEMA],
-    ...
-  })
-
-	```
-
-- Integrating sunbird-pdf-player web component in angular component
-    
-  Create a viewChild in html template of the angular component like
-
-  ```bash
-
-      <div #pdf></div>
-
-  ```
-
-  Refer the viewChild in ts file of the component and create the pdf player using document.createElement, then attach the player config and listen to the player and telemetry events like below and since we are rendering using viewChild these steps should be under ngAfterViewInit hook of the angular component.
+## Installation
 
 ```bash
+npm install @project-sunbird/sunbird-pdf-player
+```
 
-....
+Or use a CDN directly (no install required):
 
-@ViewChild('pdf') pdf: ElementRef;
+```html
+<!-- ES module (modern browsers) -->
+<script type="module" src="https://unpkg.com/@project-sunbird/sunbird-pdf-player/dist/sunbird-pdf-player.js"></script>
 
-  ....
- ngAfterViewInit() {
-    const playerConfig = <Config need be added>;
-      const pdfElement = document.createElement('sunbird-pdf-player');
-      pdfElement.setAttribute('player-config', JSON.stringify(playerConfig));
+<!-- UMD (legacy bundlers / CommonJS) -->
+<script src="https://unpkg.com/@project-sunbird/sunbird-pdf-player/dist/sunbird-pdf-player.umd.cjs"></script>
 
-      pdfElement.addEventListener('playerEvent', (event) => {
-        console.log("On playerEvent", event);
-      });
+<!-- Stylesheet -->
+<link rel="stylesheet" href="https://unpkg.com/@project-sunbird/sunbird-pdf-player/dist/style.css">
+```
 
-      pdfElement.addEventListener('telemetryEvent', (event) => {
-        console.log("On telemetryEvent", event);
-      });
-      this.pdf.nativeElement.append(pdfElement);
+---
+
+## Usage
+
+### Plain HTML / Vanilla JS
+
+```html
+<!-- 1. Load the stylesheet -->
+<link rel="stylesheet" href="node_modules/@project-sunbird/sunbird-pdf-player/dist/style.css">
+
+<!-- 2. Place the element -->
+<sunbird-pdf-player id="pdf-player" style="display:block;width:100%;height:600px;"></sunbird-pdf-player>
+
+<!-- 3. Load the component -->
+<script type="module" src="node_modules/@project-sunbird/sunbird-pdf-player/dist/sunbird-pdf-player.js"></script>
+
+<script>
+  const player = document.getElementById('pdf-player');
+
+  // Set config via JS property (recommended — accepts a plain object)
+  player.playerConfig = {
+    context: { /* telemetry context — see below */ },
+    config:  { /* toolbar + side menu toggles — see below */ },
+    metadata: {
+      identifier: 'do_123',
+      name:        'Sample PDF',
+      artifactUrl: 'https://example.com/sample.pdf'
+    }
+  };
+
+  // OR set via HTML attribute (must be a JSON string)
+  // player.setAttribute('player-config', JSON.stringify(playerConfig));
+
+  // Listen for output events
+  player.addEventListener('playerEvent',   (e) => console.log(e.detail));
+  player.addEventListener('telemetryEvent',(e) => console.log(e.detail));
+</script>
+```
+
+> **Demo**: open `web-component-demo/index.html` after running `npm run build` — it includes a live event-log panel and a PDF switcher.
+> Run the demo: `npm run build && npm run preview` then visit `http://localhost:4173/web-component-demo/`
+
+---
+
+### Angular
+
+Since `sunbird-pdf-player` is a standard web component, no NgModule is needed — just import `CUSTOM_ELEMENTS_SCHEMA`.
+
+**1. Add to `angular.json`**
+
+```json
+"styles":  ["node_modules/@project-sunbird/sunbird-pdf-player/dist/style.css"],
+"scripts": []
+```
+
+**2. Import the element in `main.ts` (or any lazy-loaded module)**
+
+```ts
+import '@project-sunbird/sunbird-pdf-player';
+```
+
+**3. Allow custom elements in the module**
+
+```ts
+import { CUSTOM_ELEMENTS_SCHEMA, NgModule } from '@angular/core';
+
+@NgModule({
+  schemas: [CUSTOM_ELEMENTS_SCHEMA]
+})
+export class AppModule {}
+```
+
+**4. Use in template**
+
+```html
+<sunbird-pdf-player
+  [playerConfig]="playerConfig"
+  (playerEvent)="onPlayerEvent($event)"
+  (telemetryEvent)="onTelemetryEvent($event)"
+  style="display:block;width:100%;height:600px;">
+</sunbird-pdf-player>
+```
+
+---
+
+### React
+
+```tsx
+import '@project-sunbird/sunbird-pdf-player';
+import '@project-sunbird/sunbird-pdf-player/dist/style.css';
+import { useEffect, useRef } from 'react';
+
+export function PdfPlayer({ config }) {
+  const ref = useRef(null);
+
+  useEffect(() => {
+    if (ref.current) {
+      ref.current.playerConfig = config;
+    }
+  }, [config]);
+
+  return (
+    <sunbird-pdf-player
+      ref={ref}
+      onPlayerEvent={(e) => console.log(e.detail)}
+      style={{ display: 'block', width: '100%', height: '600px' }}
+    />
+  );
+}
+```
+
+---
+
+### Mobile app (WebView)
+
+Load the component bundle from your app's local assets or a CDN, then inject the player config from native code after the page loads.
+
+```html
+<!-- index.html loaded in the WebView -->
+<link rel="stylesheet" href="./assets/sunbird-pdf-player/style.css">
+<sunbird-pdf-player id="player" style="display:block;width:100%;height:100vh;"></sunbird-pdf-player>
+<script type="module" src="./assets/sunbird-pdf-player/sunbird-pdf-player.js"></script>
+```
+
+**Inject config from native (JavaScript bridge)**
+
+```js
+// Called from native after WebView finishes loading
+function loadContent(configJson) {
+  document.getElementById('player').playerConfig = JSON.parse(configJson);
+}
+```
+
+**Override theme from native CSS injection**
+
+```js
+// Inject before (or after) loading the component
+const style = document.createElement('style');
+style.textContent = `
+  sunbird-pdf-player {
+    --pdf-primary:    #007bff;
+    --pdf-header-bg:  #ffffff;
+    --pdf-footer-bg:  #1f2937;
   }
-  ....
-
+`;
+document.head.appendChild(style);
 ```
 
-**Note:** : Click to see the mock - [playerConfig](https://github.com/Sunbird-Knowlg/sunbird-pdf-player/blob/release-5.5.0/src/app/data.ts) and send input config as string 
+---
 
+## Player configuration
 
-# Use as Angular library in angular app
+Pass a `PlayerConfig` object to the `.playerConfig` property (or as a JSON string to the `player-config` attribute).
 
-For help getting started with a new Angular app, check out the [Angular CLI](https://angular.io/cli).
-If you have an Angular ≥ 9 CLI project, you could simply use our schematics to add sunbird-pdf-player library to it.
+### Full config reference
 
-## Step 1: Installation
-
-Just run the following:
-```red
-ng add @project-sunbird/sunbird-pdf-player-v9
-```
-
-It will install sunbird-pdf-player for the default application specified in your `angular.json`. If you have multiple projects and you want to target a specific application, you could specify the `--project` option
-
-```red
-ng add @project-sunbird/sunbird-pdf-player-v9 --project myProject
-```
-### Manual installation
-If you prefer not to use schematics or want to add `sunbird-pdf-player-v9` to an older project, you'll need to do the following:
-
-<details>
-  <summary>Click here to show detailed instructions!</summary>
-  
-  #### 1. Install the packages:
-
-  ```bash
-  npm install @project-sunbird/sunbird-pdf-player-v9 --save
-  npm install @project-sunbird/sb-styles --save
-  npm install @project-sunbird/client-services --save
-  ```
-
-  #### 2. Include the sb-styles and assets in angular.json configuration:
-    
-  Add following under architect.build.assets and styles
-  
-  ```diff
-  {
-    ...
-    "build": {
-    "builder": "@angular-devkit/build-angular:browser",
-    "options": {
-      ...
-      "assets": [
-      ...
-  +   {
-  +    "glob": "**/*.*",
-  +    "input": "./node_modules/@project-sunbird/sunbird-pdf-player-v9/lib/assets/",
-  +    "output": "/assets/"
-  +   }	
-      ...    
-      ],
-      "styles": [
-      ...
-  +   "./node_modules/@project-sunbird/sb-styles/assets/_styles.scss"    
-      ...
-      ],
-      ...
-    }
-  ```
-  
-
-  #### 3. Import the modules and components:
-
-  Import the NgModule where you want to use:
-
-  ```diff
-+  import { SunbirdPdfPlayerModule } from '@project-sunbird/sunbird-pdf-player-v9';
-  @NgModule({
-    ...
-+    imports: [SunbirdPdfPlayerModule],
-    ...
-  })
-  export class YourAppModule { }
-  
-  ```
-
-</details>
-
-## Step 2: Send input to render PDF player
-
-Use the mock config in your component to send input to PDF player
-Click to see the mock - [playerConfig](https://github.com/Sunbird-Knowlg/sunbird-pdf-player/blob/release-5.5.0/src/app/data.ts)
-
-## Player config
 ```js
-var playerConfig = {
-  "context": {
-    "mode": "play",  // To identify preview used by the user to play/edit/preview
-    "authToken": "", // Auth key to make  api calls
-    "sid": "7283cf2e-d215-9944-b0c5-269489c6fa56", // User sessionid on portal or mobile 
-    "did": "3c0a3724311fe944dec5df559cc4e006", // Unique id to identify the device or browser 
-    "uid": "anonymous", // Current logged in user id
-    "channel": "505c7c48ac6dc1edc9b08f21db5a571d", // Unique id of the channel(Channel ID)
-    "pdata": {
-      "id": "sunbird.portal", // Producer ID. For ex: For sunbird it would be "portal" or "genie"
-      "ver": "3.2.12", // Version of the App
-      "pid": "sunbird-portal.contentplayer" // Optional. In case the component is distributed, then which instance of that component
+const playerConfig = {
+  // ── Telemetry context ────────────────────────────────────────────────────
+  context: {
+    mode:    'play',                              // 'play' | 'edit' | 'preview'
+    sid:     '7283cf2e-d215-9944-b0c5-...',      // User session id
+    did:     '3c0a3724311fe944dec5df5...',        // Unique device / browser id
+    uid:     'anonymous',                         // Current user id
+    channel: '505c7c48ac6dc1edc9b08f21...',      // Channel id
+    pdata: {
+      id:  'sunbird.portal',                      // Producer id
+      ver: '3.2.12',                              // App version
+      pid: 'sunbird-portal.contentplayer'         // Component instance (optional)
     },
-    "contextRollup": { // Defines the content roll up data
-      "l1": "505c7c48ac6dc1edc9b08f21db5a571d"
+    contextRollup: { l1: '505c7c48...' },         // Content rollup (optional)
+    objectRollup:  {},                            // Object rollup (optional)
+    tags:    [],                                  // Device tags (optional)
+    cdata:   [],                                  // Correlation data (optional)
+    host:    '',                                  // Domain for content loading
+    endpoint: '/data/v3/telemetry',               // Telemetry endpoint
+    authToken: '',                                // API auth token
+    userData: { firstName: 'Guest', lastName: '' }
+  },
+
+  // ── Toolbar + side menu toggles ──────────────────────────────────────────
+  config: {
+    toolBar: {
+      showZoomButtons:   true,   // Zoom in / zoom out buttons
+      showPagesButton:   true,   // Go-to-page input + page count
+      showPagingButtons: true,   // Prev / next page buttons in toolbar
+      showRotateButton:  true    // Rotate clockwise button
     },
-    "tags": [ // Defines the tags data
-      ""
-    ],
-    "cdata": [], // Defines correlation data
-    "timeDiff": 0,  // Defines the time difference
-    "objectRollup": {}, // Defines the object roll up data
-    "host": "", // Defines the from which domain content should be load
-    "endpoint": "", // Defines the end point
-    "userData": {  // Defines the user data firstname & lastname
-      "firstName": "",
-      "lastName": ""
-    }
+    sideMenu: {
+      showShare:    true,        // Share button (navigator.share / clipboard)
+      showDownload: true,        // Download PDF button
+      showReplay:   true,        // Replay (restart) button
+      showExit:     false,       // Exit button (default: hidden)
+      showPrint:    true         // Print button
+    },
+    startFromPage: 1             // Open on this page number (default: 1)
   },
-  "config": { 
-    "sideMenu": { 
-      "showShare": true, // show/hide share button in side menu. default value is true
-      "showDownload": true, // show/hide download button in side menu. default value is true
-      "showReplay": true, // show/hide replay button in side menu. default value is true
-      "showExit": false, // show/hide exit button in side menu. default value is false
-      "showPrint": true // show/hide print button in side menu. default value is true
-    }
-  },
-  "metadata": {}, // Content metadata json object (from API response take -> response.result.content)
-} 
 
+  // ── Content metadata ─────────────────────────────────────────────────────
+  metadata: {
+    identifier: 'do_31291455031832576019477',     // Unique content id (required)
+    name:        'My PDF Document',               // Display name (required)
+    artifactUrl: 'https://example.com/doc.pdf',   // PDF URL (required)
+    streamingUrl: '',                             // Alternative streaming URL
+    pkgVersion:  1                                // Package version (for telemetry)
+  }
+};
 ```
 
-## Metadata Mandatory property description
-Metadata gives complete information about the content.
+---
 
-Sample metadata object interface:
+### Metadata
+
+| Property | Type | Required | Description |
+|---|---|---|---|
+| `identifier` | `string` | ✅ | Unique content id — used in all telemetry events |
+| `name` | `string` | ✅ | Display name shown in the loading screen and status bar |
+| `artifactUrl` | `string` | ✅ | URL of the PDF file to load |
+| `streamingUrl` | `string` | — | Alternative URL (e.g. streaming CDN). Used if `artifactUrl` fails |
+| `pkgVersion` | `number` | — | Content package version; defaults to `1.0` in telemetry |
+
+---
+
+### Telemetry context
+
+| Property | Type | Default | Description |
+|---|---|---|---|
+| `channel` | `string` | `'in.sunbird'` | Channel identifier |
+| `pdata` | `object` | `{id:'in.sunbird',ver:'1.0'}` | Producer info |
+| `sid` | `string` | — | User session id |
+| `did` | `string` | — | Device / browser fingerprint |
+| `uid` | `string` | `'anonymous'` | User id |
+| `authToken` | `string` | `''` | API auth token |
+| `mode` | `string` | `'play'` | Playback mode |
+| `contextRollup` | `object` | `{}` | Content hierarchy rollup |
+| `objectRollup` | `object` | `{}` | Object hierarchy rollup |
+| `tags` | `string[]` | `[]` | Device tags for analytics |
+| `cdata` | `object[]` | `[]` | Correlation data |
+| `host` | `string` | `window.location.origin` | Domain for content loading |
+| `endpoint` | `string` | `'/data/v3/telemetry'` | Telemetry endpoint |
+| `userData` | `object` | `{firstName:'', lastName:''}` | User display name |
+
+---
+
+### Toolbar config
+
+All fields are optional and default to `true` unless noted.
+
+| Property | Default | Description |
+|---|---|---|
+| `showZoomButtons` | `true` | Show zoom-out / zoom-level / zoom-in controls |
+| `showPagesButton` | `true` | Show go-to-page input and total page count |
+| `showPagingButtons` | `true` | Show prev / next page buttons in the toolbar |
+| `showRotateButton` | `true` | Show rotate clockwise button |
+
+---
+
+### Side menu config
+
+| Property | Default | Description |
+|---|---|---|
+| `showShare` | `true` | Share URL via `navigator.share` or copy to clipboard |
+| `showDownload` | `true` | Download the PDF file |
+| `showPrint` | `true` | Print the PDF |
+| `showReplay` | `true` | Restart from page 1 |
+| `showExit` | `false` | Exit the player (emits `EXIT` playerEvent) |
+
+---
+
+## Outputs
+
+Both events bubble and are composed (`bubbles: true, composed: true`), so they can be listened to on any ancestor element including `document`.
+
+### playerEvent
 
 ```js
-"metadata": {
-  identifier: string;
-  name: string;
-  artifactUrl: string;
-  streamingUrl?: string;
-  compatibilityLevel?: number;
-  pkgVersion?: number;
-  isAvailableLocally?: boolean;
-  basePath?: string;
-  baseDir?: string;
-}
-  ```
-  
- In metadata, the following properties are mandatory to play the content.
- 
- |Property Name| Description|  Mandatory/Optional| Without field | Comment
-|--|----------------------|--| --| --|
-| `identifier` | It is  `string` of unique content id | Mandatory | Unable to load the content error | Its a unique content id so Its a required to log the telemetry and other data against content|
-| `name` | It is  `string` to represent the name of the content or pdf | Mandatory | Unable to load the content error | Its a required to show the name of the pdf while loading the pdf|
-| `artifactUrl` | It is  `string` url  to load the pdf from artifact url | Mandatory | Unable to load the content error | It is required to load the pdf file|
-| `streamingUrl` | It is  `string` url  to load the pdf from streaming url | Optional | Unable to load the content error | This is required if you want to load the streaming pdf URL|
-| `isAvailableLocally` | It is a `boolean` value which indicate the content is locally available | Optional | Content will not load offline | It is required to know - the content is downloaded and can be played offline|
-| `basePath` | It is `string` to represent the base path of the pdf file | Optional | Content will not load offline | It is required to load the pdf file in offline use case|
-| `baseDir` | It is `string` to represent the base path of the pdf file | Optional | Content will not load offline |  It is required to load the pdf file in offline use case |
-| `compatibilityLevel` | It is `number` to represent the compatibility level | Optional | Default compatibilityLevel 4 will be set | It's an optional field
-| `pkgVersion` | It is `number` to represent the version of the current packages | Optional | Default compatibilityLevel `1.0` will be set | it's an optional field
- 
-  Sample config for mandatory fields
+player.addEventListener('playerEvent', (e) => {
+  const { type, data } = e.detail;
+});
+```
+
+| `type` | `data` | When |
+|---|---|---|
+| `START` | `{ duration: number }` | PDF fully loaded, player view shown |
+| `PAGE_CHANGE` | `{ pageNumber: number, totalPages: number }` | Visible page changes |
+| `END` | `{ duration: number }` | Last page reached, exit clicked, or tab closed |
+| `EXIT` | — | User clicks Exit in the side menu |
+| `DOWNLOAD` | — | User triggers a download |
+| `ERROR` | `{ err, errtype, stacktrace }` | PDF failed to load |
+
+---
+
+### telemetryEvent
+
+Every Sunbird telemetry event dispatched by the SDK is re-emitted as a `telemetryEvent` CustomEvent so the host application can forward it to its own telemetry pipeline.
+
 ```js
-var playerConfig = {
-	"metadata": {
-		identifier: 'do_31291455031832576019477',
-		name: 'NAME_OF_THE_CONTENT',
-		artifactUrl: 'https://ntpproductionall.blob.core.windows.net/ntp-content-production/content/assets/do_31291458881611366418883/b331332333_std_5_mathssciencesocial_tm_term-1_opt.pdf'
-    }	
+player.addEventListener('telemetryEvent', (e) => {
+  myTelemetryPipeline.dispatch(e.detail); // forward to your backend
+});
+```
+
+Events fired by the player: `START`, `END`, `IMPRESSION` (per page), `INTERACT` (per button), `HEARTBEAT` (per page change), `ERROR`.
+
+---
+
+## External actions
+
+Control the player programmatically by setting the `action` property:
+
+```js
+const player = document.querySelector('sunbird-pdf-player');
+
+player.action = 'NEXT';        // Go to next page
+player.action = 'PREVIOUS';    // Go to previous page
+player.action = 'ZOOM_IN';     // Increase zoom by 20 %
+player.action = 'ZOOM_OUT';    // Decrease zoom by 20 %
+player.action = 'ROTATE_CW';   // Rotate 90° clockwise
+player.action = 'REPLAY';      // Restart from page 1
+player.action = 'EXIT';        // Emit EXIT event and stop
+```
+
+---
+
+## Keyboard shortcuts
+
+When the player has focus (or any of its children), these keys are active:
+
+| Key | Action |
+|---|---|
+| `ArrowRight` / `PageDown` | Next page |
+| `ArrowLeft` / `PageUp` | Previous page |
+| `+` / `=` | Zoom in |
+| `-` | Zoom out |
+| `Escape` | Close the side menu |
+
+---
+
+## Theming with CSS custom properties
+
+The player exposes CSS custom properties for every colour, making it trivial to match your portal or app theme without modifying source files.
+
+```css
+sunbird-pdf-player {
+  /* Brand */
+  --pdf-primary:             #1a73e8;   /* Buttons, active states */
+  --pdf-primary-hover:       #1557b0;
+  --pdf-primary-text:        #ffffff;   /* Text on primary colour */
+
+  /* Viewer canvas area */
+  --pdf-bg:                  #525659;   /* Dark grey background behind pages */
+
+  /* Toolbar */
+  --pdf-header-bg:           #ffffff;
+  --pdf-header-border:       #e5e7eb;
+  --pdf-header-text:         #374151;
+  --pdf-header-icon:         #6b7280;
+  --pdf-header-icon-hover-bg:#f3f4f6;
+
+  /* Status bar (bottom) */
+  --pdf-footer-bg:           #1f2937;
+  --pdf-footer-text:         #d1d5db;
+
+  /* Side menu panel */
+  --pdf-sidebar-bg:          #ffffff;
+  --pdf-sidebar-text:        #374151;
+  --pdf-sidebar-border:      #e5e7eb;
+  --pdf-sidebar-item-hover:  #f9fafb;
+
+  /* Floating nav arrows */
+  --pdf-nav-bg:              rgba(0,0,0,0.25);
+  --pdf-nav-bg-hover:        rgba(0,0,0,0.50);
+  --pdf-nav-text:            #ffffff;
+
+  /* Start / end / error pages */
+  --pdf-page-bg:             #f3f4f6;
+  --pdf-card-bg:             #ffffff;
+
+  /* Shared */
+  --pdf-button-radius:       0.375rem;
+  --pdf-font-family:         inherit;   /* Inherits from parent app automatically */
+  --pdf-font-size-sm:        0.875rem;
 }
 ```
 
-## Telemetry property description
-|Property Name| Description| Default Value | Mandatory/Optional|
-|--|----------------------|--|--|
-| `channel` | It is `string` which defines a channel identifier to know which channel is currently being used.| `in.sunbird` |Mandatory|
-| `env` | It is an string containing Unique environment where the event has occurred | ```"contentplayer"```|Optional|
-| `pdata` | It is an `object` which defines the producer information. it should have an identifier and version and canvas will log in the telemetry| ```{'id':'in.sunbird', 'ver':'1.0'}```|Mandatory| 
-| `mode` | It is a `string` to identify preview used by the user to play/edit/preview | ```play```|Optional|
-| `sid` | It is a `string` containing user session id. | ```sid = uid  ```|Optional|
-| `did` | It is a `string` containing unique device id.| ```fingerPrintjs2```|Optional| 
-| `uid` |It is a `string` containing the user id.| ```actor.id = did ? did : "anonymous" ```|Optional| 
-| `authToken` | It is a `string` to send telemetry to given endpoint (API uses for authentication) | ```''```|Optional| 
-| `contextRollup` | It is an `object` which defines content roll up data | ```{}```|Optional| 
-| `objectRollup` | It is an `object` which defines object rollup data | ```{}```|Optional| 
-| `tags` | It is an `array`. It can be used to tag devices so that summaries or metrics can be derived via specific tags. Helpful during analysis | ```[]```|Optional| 
-| `cdata` | It is an `array` Correlation data. Can be used to correlate multiple events. Generally used to track user flow | ```[]```|Optional| 
-| `host` | It is a `string` which defines the from which domain content should be load|```window.location.origin```  |Optional| 
-| `userData` | It is an `object` which defines user data | ```Anonymous```|Optional|
+**Example — dark theme:**
 
+```css
+sunbird-pdf-player {
+  --pdf-primary:       #7c3aed;
+  --pdf-primary-hover: #6d28d9;
+  --pdf-header-bg:     #1e1b4b;
+  --pdf-header-text:   #e0e7ff;
+  --pdf-header-icon:   #a5b4fc;
+  --pdf-footer-bg:     #1e1b4b;
+  --pdf-footer-text:   #c7d2fe;
+  --pdf-bg:            #0f172a;
+}
+```
 
-## Config property description
-|Property Name| Description| Default Value |  Mandatory/Optional
-|--|----------------------|--| --|
-| `config` | It is an `object` it contains the `sideMenu`. These will be used to configure the canvas  | ```{  sideMenu: {"showShare": true, "showDownload": true, "showReplay": true, "showExit": false,"showPrint": true}}``` | Optional |
-| `config.sideMenu.showShare` | It is  `boolean` to show/hide share button in side menu| ```true```| Optional |
-| `config.sideMenu.showDownload` | It is  `boolean` to show/hide download button in side menu| ```true```| Optional |
-| `config.sideMenu.showReplay` | It is  `boolean` to show/hide replay button in side menu| ```true```| Optional |
-| `config.sideMenu.showExit` | It is  `boolean` to show/hide exit button in side menu| ```false```| Optional |
-| `config.sideMenu.showPrint` | It is  `boolean` to show/hide print button in side menu| ```true```| Optional |
+---
 
-## Available components
-|Feature| Notes| Selector|Code|Input|Output
-|--|--|--|------------------------------------------------------------------------------------------|---|--|
-| PDF Player | Can be used to render pdf | sunbird-pdf-player| *`<sunbird-pdf-player [playerConfig]="playerConfig"><sunbird-pdf-player>`*|playerConfig|playerEvent, telemetryEvent|
+## Development
 
-<br /><br />
+### Prerequisites
 
-# Use as Web component in Mobile app 
-For existing apps, follow these steps [steps](README.md#use-as-web-component--in-the-angular-app) to begin using.
+Node.js ≥ 18, npm ≥ 9.
 
-# Use as Angular library in Mobile app 
-For existing apps, follow these steps to begin using.
+### Setup
 
-## Step 1: Install the packages
-Click to see the steps - [InstallPackages](README.md#step-1-install-the-packages)
+```bash
+git clone https://github.com/HarishGangula/sunbird-pdf-player.git
+cd sunbird-pdf-player
+npm install
+```
 
-## Step 2: Include the sb-styles and assets in angular.json
+### Scripts
 
-Click to see the steps - [IncludeStyles](README.md#step-2-include-the-sb-styles-and-assets-in-angularjson)
-  
-## Step 3: Import the modules and components
+| Command | Description |
+|---|---|
+| `npm run dev` | Start Vite dev server with HMR at `http://localhost:5173` |
+| `npm run build` | TypeScript type-check + production Vite build → `dist/` |
+| `npm run preview` | Serve the production build locally for inspection |
+| `npm run test:e2e` | Run Playwright E2E tests (requires Chromium — see below) |
+| `npm run test:e2e:ui` | Open Playwright UI mode for debugging tests |
 
-Click to see the steps - [Import](README.md#step-3-import-the-modules-and-components)
+### Running E2E tests
 
+```bash
+# Install the Chromium browser (once)
+npx playwright install chromium
 
-## Step 4: Import in component       
+# Run all tests
+npm run test:e2e
+```
 
-    <sunbird-video-player [playerConfig]="playerConfig" (playerEvent)="playerEvents($event)"
-    (telemetryEvent)="playerTelemetryEvents($event)"></sunbird-video-player>  
+Tests live in `e2e/pdf-player.spec.ts` and cover all player features, responsive viewports, theming, and the I/O contract.
 
-## Step 5: Send input to render PDF player
+### Project structure
 
-Click to see the input data - [playerConfig](README.md#step-4-send-input-to-render-pdf-player)
+```
+sunbird-pdf-player/
+├── src/
+│   ├── sunbird-pdf-player.ts       # Main component & orchestration
+│   ├── interfaces.ts               # TypeScript types (PlayerConfig etc.)
+│   ├── index.css                   # Tailwind entry + CSS custom properties
+│   ├── components/
+│   │   ├── pdf-viewer.ts           # Virtual-rendering PDF canvas (IntersectionObserver)
+│   │   ├── header.ts               # Toolbar (config-driven)
+│   │   ├── navigation.ts           # Floating prev/next arrows
+│   │   ├── sidebar.ts              # Side menu panel
+│   │   ├── start-page.ts           # Loading screen with progress
+│   │   ├── end-page.ts             # Completion screen
+│   │   └── error.ts                # Error screen with retry
+│   ├── services/
+│   │   └── telemetry-service.ts    # Sunbird Telemetry SDK wrapper
+│   └── assets/
+│       └── gita.pdf                # Sample PDF for local dev
+├── e2e/
+│   └── pdf-player.spec.ts          # Playwright E2E tests
+├── web-component-demo/
+│   └── index.html                  # Demo page (event log + PDF switcher)
+├── dist/                           # Production build output (git-ignored)
+├── vite.config.ts
+├── tailwind.config.js
+├── tsconfig.json
+├── playwright.config.ts
+└── package.json
+```
 
-# Use as Web component in React app 
-For existing apps, follow these steps [steps](https://github.com/Sunbird-Knowlg/knowlg-portal/tree/release-5.3.0/react-app#readme) to begin using.
+---
 
-# Use as Web component in Flutter app 
-For existing apps, follow these steps [steps](https://github.com/Sunbird-Knowlg/knowlg-portal/tree/release-5.3.0/flutter_app#readme) to begin using.
+## Release process
 
-# Use as Web component in React native app(Android)
-For existing apps, follow these steps [steps](https://github.com/Sunbird-Knowlg/knowlg-portal/tree/release-5.3.0/reactNative#readme) to begin using.
+Releases are triggered by pushing a git tag. The tag name becomes the NPM package version (leading `v` is stripped automatically).
 
-## Sample code
-Click to see the sample code - [sampleCode](https://github.com/Sunbird-Ed/SunbirdEd-mobile-app/blob/release-4.8.0/src/app/player/player.page.html)
-<br /><br />
+```bash
+# Tag and push
+git tag v1.2.3
+git push origin v1.2.3
+```
 
-## Code Quality
+The `publish_web_component` GitHub Actions workflow will then:
 
-The project maintains code quality through automated checks that run on every pull request:
+1. Type-check and build the project
+2. Set `package.json` version from the tag
+3. Publish `@project-sunbird/sunbird-pdf-player` to NPM
+4. Zip `dist/` and attach it as a downloadable asset to the GitHub Release
 
-1. **Linting**
-   - ESLint for code style and quality
-   - Command: `npm run lint`
+**Required repository secret:** `NPM_TOKEN` — a publish-scoped NPM access token.
 
-2. **Dependencies**
-   - Uses `npm ci --legacy-peer-deps` for deterministic installations
-   - GitHub Actions cache for faster builds
+---
 
-3. **Code Formatting**
-   - Ensures consistent code formatting
-   - Can be automatically fixed using `npm run lint:fix`
+## CI / CD
 
-4. **Testing**
-   - Unit tests using Karma
-   - Command: `npm run test`
-
-These checks ensure consistent code style, secure dependency management, and reliable testing.
-
-## Release Process
-
-Release Process for Sunbird PDF Player - This GitHub Actions workflow automatically publishes the Sunbird PDF Player web component to NPM whenever a new tag is pushed. The following steps describe the workflow file:
-
-- Checks out the repository code
-- Sets up Node.js
-- Manages dependency caching to speed up builds
-- Installs dependencies
-- Builds the web component
-- Packages and publishes it to NPM
-- Prerequisites - set the `NPM_TOKEN` in the repository secrets
-
-1. **Web Component Publishing:**:
-   - Builds the web component using `npm run build-web-component`
-   - Packages it with specific version from package.json
-   - Publishes to NPM as @project-sunbird/sunbird-pdf-player-web-component
-
-2. **Module Publishing:**
-   - Builds the main module using `npm run build-lib`
-   - Packages it with specific version from package.json
-   - Publishes to NPM as @project-sunbird/sunbird-pdf-player
+| Workflow | Trigger | Steps |
+|---|---|---|
+| `pull_request.yml` | Every pull request | TypeScript check → build → upload artifact → Playwright E2E (Chromium) → upload report |
+| `publish_web_component.yml` | Tag push | Build → set version → `npm publish` → zip dist → GitHub Release |
+| `jira-description-action.yml` | PR opened / labeled | Auto-populates PR description with Jira issue details |
