@@ -55,7 +55,7 @@ Built with [Lit](https://lit.dev/), [PDF.js](https://mozilla.github.io/pdf.js/),
 <!DOCTYPE html>
 <html lang="en">
 <head>
-  <link rel="stylesheet" href="https://unpkg.com/@project-sunbird/sunbird-pdf-player/dist/style.css">
+  <link rel="stylesheet" href="https://unpkg.com/@project-sunbird/sunbird-pdf-player/dist/assets/style.css">
 </head>
 <body>
   <sunbird-pdf-player id="player" style="display:block;width:100%;height:100vh;"></sunbird-pdf-player>
@@ -92,7 +92,7 @@ Or use a CDN directly (no install required):
 <script src="https://unpkg.com/@project-sunbird/sunbird-pdf-player/dist/sunbird-pdf-player.umd.cjs"></script>
 
 <!-- Stylesheet -->
-<link rel="stylesheet" href="https://unpkg.com/@project-sunbird/sunbird-pdf-player/dist/style.css">
+<link rel="stylesheet" href="https://unpkg.com/@project-sunbird/sunbird-pdf-player/dist/assets/style.css">
 ```
 
 ---
@@ -103,7 +103,7 @@ Or use a CDN directly (no install required):
 
 ```html
 <!-- 1. Load the stylesheet -->
-<link rel="stylesheet" href="node_modules/@project-sunbird/sunbird-pdf-player/dist/style.css">
+<link rel="stylesheet" href="node_modules/@project-sunbird/sunbird-pdf-player/dist/assets/style.css">
 
 <!-- 2. Place the element -->
 <sunbird-pdf-player id="pdf-player" style="display:block;width:100%;height:600px;"></sunbird-pdf-player>
@@ -146,7 +146,7 @@ Since `sunbird-pdf-player` is a standard web component, no NgModule is needed â€
 **1. Add to `angular.json`**
 
 ```json
-"styles":  ["node_modules/@project-sunbird/sunbird-pdf-player/dist/style.css"],
+"styles":  ["node_modules/@project-sunbird/sunbird-pdf-player/dist/assets/style.css"],
 "scripts": []
 ```
 
@@ -184,7 +184,7 @@ export class AppModule {}
 
 ```tsx
 import '@project-sunbird/sunbird-pdf-player';
-import '@project-sunbird/sunbird-pdf-player/dist/style.css';
+import '@project-sunbird/sunbird-pdf-player/dist/assets/style.css';
 import { useEffect, useRef } from 'react';
 
 export function PdfPlayer({ config }) {

@@ -11,22 +11,20 @@ export default defineConfig({
     },
     rollupOptions: {
       output: {
+        // Inline dynamic imports so pdfjs-dist (loaded via dynamic import to bypass
+        // Rollup's static analysis of its webpack-bundled ESM) stays in the single
+        // output file rather than being split into a separate chunk.
+        inlineDynamicImports: true,
         assetFileNames: 'assets/[name][extname]',
       },
-      onwarn(warning, warn) {
-        // Suppress false-positive "not exported" for namespace imports from CJS/ESM dual packages
-        if (warning.code === 'MISSING_EXPORT') return;
-        warn(warning);
-      },
     },
-    // Do NOT inline the worker as base64 — keep it as a separate file
+    // Do NOT inline assets as base64 — keeps output file size reasonable
     assetsInlineLimit: 0,
   },
-  // Dev server: serve the demo page with CSS
+  // Dev server CSS processing
   css: {
     postcss: './postcss.config.js',
   },
-  // Copy the PDF.js worker to the build output
   assetsInclude: ['**/*.mjs'],
   optimizeDeps: {
     exclude: ['pdfjs-dist'],

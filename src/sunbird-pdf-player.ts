@@ -1,3 +1,4 @@
+import './index.css';
 import { LitElement, html, nothing, PropertyValues } from 'lit';
 import { customElement, property, state, query } from 'lit/decorators.js';
 import type { PlayerConfig, ToolBarConfig, SideMenuConfig } from './interfaces';

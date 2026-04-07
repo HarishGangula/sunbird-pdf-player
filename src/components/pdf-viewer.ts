@@ -1,17 +1,29 @@
 import { LitElement, html, css } from 'lit';
 import { customElement, property, state, query } from 'lit/decorators.js';
-// Use the main package entry which has proper types
-import * as pdfjsLib from 'pdfjs-dist';
-
-// Worker is bundled locally via vite config — see vite.config.ts
-pdfjsLib.GlobalWorkerOptions.workerSrc = new URL(
-  'pdfjs-dist/build/pdf.worker.mjs',
-  import.meta.url
-).href;
+// Import only types — erased at build time, no static analysis of pdfjs-dist by Rollup
+import type { PDFDocumentProxy } from 'pdfjs-dist';
 
 const ZOOM_MIN = 50;
 const ZOOM_MAX = 300;
 const BUFFER_PAGES = 2; // pages above and below viewport to pre-render
+
+// Module-level cache so pdfjs-dist is loaded only once across all component instances
+// eslint-disable-next-line @typescript-eslint/no-explicit-any
+let _pdfjsLib: any = null;
+
+async function getPdfjs() {
+  if (!_pdfjsLib) {
+    // Dynamic import avoids Rollup's static analysis of the webpack-bundled ESM in
+    // pdfjs-dist/build/pdf.mjs, which would otherwise tree-shake GlobalWorkerOptions
+    // and getDocument to (void 0) due to MISSING_EXPORT analysis failures.
+    _pdfjsLib = await import(/* @vite-ignore */ 'pdfjs-dist');
+    _pdfjsLib.GlobalWorkerOptions.workerSrc = new URL(
+      'pdfjs-dist/build/pdf.worker.mjs',
+      import.meta.url
+    ).href;
+  }
+  return _pdfjsLib;
+}
 
 @customElement('pdf-viewer')
 export class PdfViewer extends LitElement {
@@ -27,7 +39,7 @@ export class PdfViewer extends LitElement {
 
   @query('#viewer-container') private _container!: HTMLDivElement;
 
-  private _pdf: pdfjsLib.PDFDocumentProxy | null = null;
+  private _pdf: PDFDocumentProxy | null = null;
   private _pagesCount = 0;
   private _fitWidthScale = 1; // scale at which page width === container width
   private _renderedPages: Set<number> = new Set();
@@ -137,6 +149,7 @@ export class PdfViewer extends LitElement {
     this._emit('progress', 5);
 
     try {
+      const pdfjsLib = await getPdfjs();
       const loadingTask = pdfjsLib.getDocument(this.src);
       loadingTask.onProgress = (p: { loaded: number; total: number }) => {
         if (p.total > 0) {
@@ -145,7 +158,7 @@ export class PdfViewer extends LitElement {
       };
 
       this._pdf = await loadingTask.promise;
-      this._pagesCount = this._pdf.numPages;
+      this._pagesCount = this._pdf!.numPages;
 
       await this._computeLayout();
       this._buildPlaceholders();

@@ -15,7 +15,7 @@
       "import": "./dist/sunbird-pdf-player.js",
       "require": "./dist/sunbird-pdf-player.umd.cjs"
     },
-    "./dist/style.css": "./dist/style.css"
+    "./dist/assets/style.css": "./dist/assets/style.css"
   },
   "scripts": {
     "dev":       "vite",
