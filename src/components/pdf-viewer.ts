@@ -264,8 +264,12 @@ export class PdfViewer extends LitElement {
                 this._renderPageOntoWrapper(pageNo + b, nextEl);
               }
             }
-            // Check if this is the last page — fire pageend
-            if (pageNo === this._pagesCount && !this._endFired) {
+            // Check if this is the last page — fire pageend.
+            // Guard: skip for single-page documents. Their only page is always
+            // visible, so the observer fires immediately after load and the player
+            // would jump straight to the end page before the user sees anything.
+            // For single-page PDFs the end page is only reachable via Next button.
+            if (pageNo === this._pagesCount && !this._endFired && this._pagesCount > 1) {
               this._endFired = true;
               this._emit('pageend', null);
             }
