@@ -1,5 +1,5 @@
 import { LitElement, html, css } from 'lit';
-import { customElement, property, state, query } from 'lit/decorators.js';
+import { customElement, property, query } from 'lit/decorators.js';
 // Import only types — erased at build time, no static analysis of pdfjs-dist by Rollup
 import type { PDFDocumentProxy } from 'pdfjs-dist';
 
@@ -41,9 +41,6 @@ export class PdfViewer extends LitElement {
   @property({ type: Number }) rotation = 0;
   @property({ type: Number }) initialPage = 1;
 
-  // ── Internal state ───────────────────────────────────────────────────────
-  @state() private _loading = false;
-
   @query('#viewer-container') private _container!: HTMLDivElement;
 
   private _pdf: PDFDocumentProxy | null = null;
@@ -58,6 +55,7 @@ export class PdfViewer extends LitElement {
   private _touchStartY = 0;
   private _currentPage = 1;
   private _endFired = false;
+  private _loadAbortController: AbortController | null = null;
 
   // ── Styles ───────────────────────────────────────────────────────────────
   static styles = css`
@@ -126,6 +124,7 @@ export class PdfViewer extends LitElement {
 
   disconnectedCallback() {
     super.disconnectedCallback();
+    this._loadAbortController?.abort();
     this._intersectionObs?.disconnect();
     this._resizeObs?.disconnect();
     if (this._scrollRafId !== null) cancelAnimationFrame(this._scrollRafId);
@@ -147,7 +146,11 @@ export class PdfViewer extends LitElement {
 
   // ── Document loading ─────────────────────────────────────────────────────
   private async _loadDocument() {
-    this._loading = true;
+    // Abort any in-flight load (e.g. previous URL still loading when src changes)
+    this._loadAbortController?.abort();
+    const ctrl = new AbortController();
+    this._loadAbortController = ctrl;
+
     this._renderedPages.clear();
     this._endFired = false;
     this._intersectionObs?.disconnect();
@@ -157,14 +160,18 @@ export class PdfViewer extends LitElement {
 
     try {
       const pdfjsLib = await getPdfjs();
+      if (ctrl.signal.aborted) return;
+
       const loadingTask = pdfjsLib.getDocument(this.src);
       loadingTask.onProgress = (p: { loaded: number; total: number }) => {
+        if (ctrl.signal.aborted) return;
         if (p.total > 0) {
           this._emit('progress', Math.round((p.loaded / p.total) * 90));
         }
       };
 
       this._pdf = await loadingTask.promise;
+      if (ctrl.signal.aborted) return;
       this._pagesCount = this._pdf!.numPages;
 
       await this._computeLayout();
@@ -183,9 +190,9 @@ export class PdfViewer extends LitElement {
         this.navigateToPage(this.initialPage);
       }
     } catch (err) {
-      this._emit('error', err);
-    } finally {
-      this._loading = false;
+      if (!ctrl.signal.aborted) {
+        this._emit('error', err);
+      }
     }
   }
 
@@ -417,14 +424,10 @@ export class PdfViewer extends LitElement {
 
   // ── Render ───────────────────────────────────────────────────────────────
   render() {
-    return html`
-      <div id="viewer-container" role="document" aria-label="PDF document viewer">
-        ${this._loading ? html`
-          <div style="color:#9ca3af;margin-top:40px;font-size:14px;">
-            Loading…
-          </div>
-        ` : ''}
-      </div>
-    `;
+    // #viewer-container intentionally has no Lit-managed children.
+    // _buildPlaceholders() uses container.innerHTML = '' to replace its content,
+    // which would destroy Lit's sentinel nodes and cause "nextSibling of null"
+    // errors on the next Lit update cycle. All content is managed imperatively.
+    return html`<div id="viewer-container" role="document" aria-label="PDF document viewer"></div>`;
   }
 }
