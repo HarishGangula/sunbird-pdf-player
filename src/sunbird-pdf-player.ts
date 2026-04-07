@@ -120,6 +120,11 @@ export class SunbirdPdfPlayer extends LitElement {
     this._currentPage = this.playerConfig.config?.startFromPage || 1;
     this._zoom = this.playerConfig.config?.zoom || 100;
     this._rotation = this.playerConfig.config?.rotation || 0;
+    // Always remount pdf-viewer on every init (new playerConfig or Replay).
+    // This disconnects the old IntersectionObserver before _isEndEventRaised
+    // is reset, preventing the old observer from firing pageend on a fresh
+    // _isEndEventRaised = false and incorrectly jumping to the end page.
+    this._loadKey++;
 
     telemetryService.initialize(this.playerConfig, (event) => {
       this._dispatchEvent('telemetryEvent', event);
@@ -237,7 +242,6 @@ export class SunbirdPdfPlayer extends LitElement {
         break;
       case 'REPLAY':
         this._initialize();
-        this._loadKey++; // forces pdf-viewer to remount so _loadDocument() runs again
         break;
       case 'EXIT':
         this._raiseEndEvent();
