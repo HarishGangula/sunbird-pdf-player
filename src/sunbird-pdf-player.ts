@@ -1,6 +1,7 @@
 import './index.css';
 import { LitElement, html, nothing, PropertyValues } from 'lit';
 import { customElement, property, state, query } from 'lit/decorators.js';
+import { keyed } from 'lit/directives/keyed.js';
 import type { PlayerConfig, ToolBarConfig, SideMenuConfig } from './interfaces';
 import { telemetryService } from './services/telemetry-service';
 import './components/pdf-viewer';
@@ -65,6 +66,8 @@ export class SunbirdPdfPlayer extends LitElement {
   @state() private _showControls = true;
   @state() private _sideMenuOpen = false;
   @state() private _showInvalidPageTooltip = false;
+  // Incremented on each Replay to force pdf-viewer to remount via keyed()
+  @state() private _loadKey = 0;
 
   // ── Session tracking ─────────────────────────────────────────────────────
   private _startTime = 0;
@@ -234,6 +237,7 @@ export class SunbirdPdfPlayer extends LitElement {
         break;
       case 'REPLAY':
         this._initialize();
+        this._loadKey++; // forces pdf-viewer to remount so _loadDocument() runs again
         break;
       case 'EXIT':
         this._raiseEndEvent();
@@ -448,13 +452,13 @@ export class SunbirdPdfPlayer extends LitElement {
 
           <!-- PDF canvas area -->
           <div class="flex-1 relative overflow-hidden ${this._viewState === 'player' ? '' : 'invisible'}">
-            <pdf-viewer
+            ${keyed(this._loadKey, html`<pdf-viewer
               .src=${this.playerConfig?.metadata.artifactUrl || ''}
               .zoom=${this._zoom}
               .rotation=${this._rotation}
               .initialPage=${this._currentPage}
               @viewerEvent=${this._handleViewerEvent}
-            ></pdf-viewer>
+            ></pdf-viewer>`)}
 
             <!-- Side navigation arrows -->
             ${this._viewState === 'player' ? html`

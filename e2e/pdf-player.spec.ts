@@ -190,17 +190,32 @@ test.describe('Sunbird PDF Player — Core', () => {
     await waitForPlayer(page);
 
     const canvas = page.locator('pdf-viewer canvas').first();
-    const { width: w1, height: h1 } = await canvas.boundingBox() ?? { width: 0, height: 0 };
+    await expect(canvas).toBeVisible({ timeout: 10_000 });
+
+    // Read the canvas height attribute (set programmatically by pdf-viewer.ts).
+    // Using getAttribute() on a Playwright locator correctly pierces shadow DOM,
+    // unlike document.querySelector() inside waitForFunction() which cannot.
+    const h1Str = await canvas.getAttribute('height');
+    const h1 = parseFloat(h1Str!);
+    const w1Str = await canvas.getAttribute('width');
+    const w1 = parseFloat(w1Str!);
 
     await page.locator('sb-player-header button[title="Rotate clockwise"]').click();
 
-    // After 90° rotation the canvas should be taller than wide (portrait→landscape)
-    await page.waitForTimeout(500); // allow re-render
-    const { width: w2, height: h2 } = await canvas.boundingBox() ?? { width: 0, height: 0 };
+    // Wait for pdf-viewer to re-render — canvas height attribute will change.
+    // (Fit-to-width means canvas width stays ≈ container width in both orientations;
+    // only the height changes when the aspect ratio inverts.)
+    await expect(canvas).not.toHaveAttribute('height', h1Str!, { timeout: 10_000 });
 
-    // Width and height should swap (approximately)
-    expect(Math.abs(w2 - h1)).toBeLessThan(5);
-    expect(Math.abs(h2 - w1)).toBeLessThan(5);
+    const h2 = parseFloat((await canvas.getAttribute('height'))!);
+    const w2 = parseFloat((await canvas.getAttribute('width'))!);
+
+    // For a portrait PDF (h > w) rotated 90°:
+    //   new scale = containerWidth / originalHeight  (< old scale)
+    //   new canvas height = originalWidth * newScale < originalHeight * oldScale = h1
+    expect(h2).toBeLessThan(h1);
+    // Width should remain ≈ the same (fit-to-width in both orientations)
+    expect(Math.abs(w2 - w1)).toBeLessThan(10);
   });
 
   // ── 11. Sidebar ────────────────────────────────────────────────────────────
@@ -280,6 +295,12 @@ test.describe('Sunbird PDF Player — Core', () => {
       const input = page.locator('sb-player-header input[aria-label="Go to page"]');
       await input.fill(String(totalPages));
       await input.press('Enter');
+
+      // Wait for _currentPage in the main component to update to totalPages.
+      // The scroll/RAF cycle that fires the pagechanging event is async, so
+      // clicking Next immediately would see the old _currentPage and navigate
+      // to page 2 instead of triggering the end page.
+      await expect(page.locator(`text=/Page ${totalPages} of ${totalPages}/`)).toBeVisible({ timeout: 10_000 });
 
       // Navigate NEXT from last page to trigger end
       await page.locator('sb-player-header button[title="Next page"]').click();

@@ -49,7 +49,6 @@ export class Header extends LitElement {
     const showPages = tb.showPagesButton !== false;
     const showPaging = tb.showPagingButtons !== false;
     const atFirst = this.pageNumber <= 1;
-    const atLast = this.pageNumber >= this.totalPages;
 
     return html`
       <header
@@ -151,7 +150,6 @@ export class Header extends LitElement {
           ${showPaging ? html`
             <button
               @click=${() => this._emit('NEXT')}
-              ?disabled=${atLast}
               title="Next page"
               aria-label="Next page"
               style="border-radius:var(--pdf-button-radius);"

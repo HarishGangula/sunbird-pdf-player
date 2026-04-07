@@ -47,7 +47,9 @@ export default defineConfig({
     postcss: './postcss.config.js',
   },
   optimizeDeps: {
-    exclude: ['pdfjs-dist'],
-    include: ['@project-sunbird/telemetry-sdk'],
+    // Include pdfjs-dist so Vite's esbuild pre-bundles it for the dev server.
+    // esbuild correctly handles pdfjs-dist's webpack-generated ESM exports,
+    // unlike Rollup which turns them into (void 0) via MISSING_EXPORT analysis.
+    include: ['pdfjs-dist', '@project-sunbird/telemetry-sdk'],
   },
 });
