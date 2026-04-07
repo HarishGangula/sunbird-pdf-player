@@ -13,14 +13,18 @@ let _pdfjsLib: any = null;
 
 async function getPdfjs() {
   if (!_pdfjsLib) {
-    // Dynamic import avoids Rollup's static analysis of the webpack-bundled ESM in
-    // pdfjs-dist/build/pdf.mjs, which would otherwise tree-shake GlobalWorkerOptions
-    // and getDocument to (void 0) due to MISSING_EXPORT analysis failures.
-    _pdfjsLib = await import(/* @vite-ignore */ 'pdfjs-dist');
-    _pdfjsLib.GlobalWorkerOptions.workerSrc = new URL(
-      'pdfjs-dist/build/pdf.worker.mjs',
-      import.meta.url
-    ).href;
+    // Load pdf.mjs via a relative URL resolved from the component's own URL.
+    // The file is copied to dist/ alongside this bundle by viteStaticCopy.
+    // Using a relative URL means Rollup never processes pdf.mjs, so its webpack-
+    // generated named exports (GlobalWorkerOptions, getDocument, …) are available
+    // without being tree-shaken to (void 0).
+    // Derive the base URL of this bundle file, then point at the sibling pdfjs files.
+    // String concatenation (not new URL()) avoids Vite's build-time URL checker,
+    // which would warn that pdf.mjs doesn't exist at build time (it's copied by
+    // the copyPdfjsPlugin after the bundle is written).
+    const base = import.meta.url.replace(/\/[^/]*$/, '/');
+    _pdfjsLib = await import(/* @vite-ignore */ `${base}pdf.mjs`);
+    _pdfjsLib.GlobalWorkerOptions.workerSrc = `${base}pdf.worker.mjs`;
   }
   return _pdfjsLib;
 }

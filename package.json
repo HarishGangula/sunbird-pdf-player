@@ -3,12 +3,18 @@
   "version": "0.0.1",
   "description": "Sunbird PDF Player — Lit web component for rendering PDF content",
   "type": "module",
-  "keywords": ["sunbird", "pdf", "player", "web-component", "lit"],
+  "keywords": [
+    "sunbird",
+    "pdf",
+    "player",
+    "web-component",
+    "lit"
+  ],
   "license": "MIT",
   "files": [
     "dist"
   ],
-  "main":   "dist/sunbird-pdf-player.umd.cjs",
+  "main": "dist/sunbird-pdf-player.umd.cjs",
   "module": "dist/sunbird-pdf-player.js",
   "exports": {
     ".": {
@@ -18,24 +24,24 @@
     "./dist/assets/style.css": "./dist/assets/style.css"
   },
   "scripts": {
-    "dev":       "vite",
-    "build":     "tsc --noEmit && vite build",
-    "preview":   "vite preview",
-    "test:e2e":  "playwright test",
+    "dev": "vite",
+    "build": "tsc --noEmit && vite build",
+    "preview": "vite preview",
+    "test:e2e": "playwright test",
     "test:e2e:ui": "playwright test --ui"
   },
   "dependencies": {
+    "@project-sunbird/telemetry-sdk": "2.0.1",
     "lit": "^3.1.2",
-    "pdfjs-dist": "^4.0.379",
-    "@project-sunbird/telemetry-sdk": "2.0.1"
+    "pdfjs-dist": "^4.0.379"
   },
   "devDependencies": {
-    "typescript": "^5.2.2",
-    "vite": "^5.2.0",
-    "tailwindcss": "^3.4.1",
-    "postcss": "^8.4.35",
-    "autoprefixer": "^10.4.18",
     "@playwright/test": "^1.44.0",
-    "@types/node": "^20.0.0"
+    "@types/node": "^20.0.0",
+    "autoprefixer": "^10.4.18",
+    "postcss": "^8.4.35",
+    "tailwindcss": "^3.4.1",
+    "typescript": "^5.2.2",
+    "vite": "^5.2.0"
   }
 }
