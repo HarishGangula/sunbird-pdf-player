@@ -92,6 +92,7 @@ export class PdfViewer extends LitElement {
       margin-bottom: 16px;
       box-shadow: 0 4px 12px rgba(0,0,0,0.4);
       background-color: #fff;
+      flex-shrink: 0;
       /* width/height set dynamically in JS */
     }
     canvas {
