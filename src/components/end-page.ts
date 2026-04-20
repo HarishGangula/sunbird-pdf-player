@@ -26,11 +26,6 @@ export class EndPage extends LitElement {
     );
   }
 
-  private get _progress(): number {
-    if (!this.totalPages) return 100;
-    return Math.round((this.pagesRead / this.totalPages) * 100);
-  }
-
   render() {
     return html`
       <div
@@ -44,13 +39,8 @@ export class EndPage extends LitElement {
           <p class="text-lg mb-4" style="color:var(--pdf-header-icon);">You have successfully completed</p>
           <p class="text-2xl font-semibold mb-6" style="color:var(--pdf-header-text);">${this.contentName}</p>
 
-          <div class="w-full bg-gray-200 rounded-full h-2.5 mb-4">
-            <div class="bg-green-500 h-2.5 rounded-full" style="width: ${this._progress}%"></div>
-          </div>
-
           <div class="grid grid-cols-3 gap-4 mb-8">
             ${this._stat('Pages Read', `${this.pagesRead}/${this.totalPages}`)}
-            ${this._stat('Progress', `${this._progress}%`)}
             ${this._stat('Time Spent', this.timeSpentLabel || '—')}
           </div>
 

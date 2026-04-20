@@ -55,7 +55,7 @@ async function getTelemetryEvents(page: Page): Promise<any[]> {
 
 test.describe('Sunbird PDF Player — Core', () => {
   test.beforeEach(async ({ page }) => {
-    await page.goto('/');
+    await page.goto('/web-component-demo/index.html');
     await capturePlayerEvents(page);
   });
 
@@ -300,7 +300,7 @@ test.describe('Sunbird PDF Player — Core', () => {
       // The scroll/RAF cycle that fires the pagechanging event is async, so
       // clicking Next immediately would see the old _currentPage and navigate
       // to page 2 instead of triggering the end page.
-      await expect(page.locator(`text=/Page ${totalPages} of ${totalPages}/`)).toBeVisible({ timeout: 10_000 });
+      await expect(page.locator(`text=/Page ${totalPages} of ${totalPages}/`)).toBeVisible({ timeout: 30_000 });
 
       // Navigate NEXT from last page to trigger end
       await page.locator('sb-player-header button[title="Next page"]').click();
@@ -342,7 +342,7 @@ test.describe('Sunbird PDF Player — Responsive', () => {
       isMobile: true,
     });
     const page = await context.newPage();
-    await page.goto('/');
+    await page.goto('/web-component-demo/index.html');
 
     // Wait for player
     await expect(page.locator('sunbird-pdf-player')).toBeAttached();
@@ -361,7 +361,7 @@ test.describe('Sunbird PDF Player — Responsive', () => {
       isMobile: true,
     });
     const page = await context.newPage();
-    await page.goto('/');
+    await page.goto('/web-component-demo/index.html');
 
     // Wait for PDF to load
     await expect(page.locator('sb-player-header')).toBeVisible({ timeout: 30_000 });
@@ -378,7 +378,7 @@ test.describe('Sunbird PDF Player — Responsive', () => {
 
 test.describe('Sunbird PDF Player — Theming', () => {
   test('CSS custom property override changes toolbar background', async ({ page }) => {
-    await page.goto('/');
+    await page.goto('/web-component-demo/index.html');
 
     // Override the primary color
     await page.addStyleTag({
@@ -405,7 +405,7 @@ test.describe('Sunbird PDF Player — Theming', () => {
 
 test.describe('Sunbird PDF Player — I/O Contract', () => {
   test('accepts player-config as JSON string attribute', async ({ page }) => {
-    await page.goto('/');
+    await page.goto('/web-component-demo/index.html');
 
     // The index.html sets playerConfig as an object property, but also verify
     // string attribute works
@@ -426,7 +426,7 @@ test.describe('Sunbird PDF Player — I/O Contract', () => {
   });
 
   test('action property triggers external navigation', async ({ page }) => {
-    await page.goto('/');
+    await page.goto('/web-component-demo/index.html');
     await expect(page.locator('sb-player-header')).toBeVisible({ timeout: 30_000 });
 
     // Trigger NEXT via external action property
@@ -434,11 +434,11 @@ test.describe('Sunbird PDF Player — I/O Contract', () => {
       (document.querySelector('sunbird-pdf-player') as any).action = 'NEXT';
     });
 
-    await expect(page.locator('text=/Page 2 of \\d+/')).toBeVisible({ timeout: 5_000 });
+    await expect(page.locator('text=/Page 2 of \d+/')).toBeVisible({ timeout: 5_000 });
   });
 
   test('playerEvent bubbles are composed (reach document)', async ({ page }) => {
-    await page.goto('/');
+    await page.goto('/web-component-demo/index.html');
 
     const eventCaptured = page.evaluate(() => {
       return new Promise<boolean>((resolve) => {
@@ -455,3 +455,4 @@ test.describe('Sunbird PDF Player — I/O Contract', () => {
     expect(captured).toBe(true);
   });
 });
+

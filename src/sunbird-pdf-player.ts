@@ -291,6 +291,7 @@ export class SunbirdPdfPlayer extends LitElement {
 
   private _showEndPage() {
     if (this._isEndEventRaised) return;
+    this._pagesVisited.add(this._totalPages);
     this._viewState = 'end';
     this._raiseEndEvent();
   }

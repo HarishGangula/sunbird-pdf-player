@@ -250,7 +250,7 @@
     <div class="pdf-switcher">
       <label for="pdf-select">PDF:</label>
       <select id="pdf-select">
-        <option value="../src/assets/gita.pdf">Local — Gita (sample)</option>
+        <option value="../src/assets/sample.pdf">Local — Sample PDF</option>
         <option value="https://ontheline.trincoll.edu/images/bookdown/sample-local-pdf.pdf">Second option</option>
         <option value="custom">Custom URL…</option>
       </select>
@@ -279,7 +279,7 @@
     Load the Lit web component bundle (ES module).
     In a production portal, reference the versioned file from a CDN or your assets server.
   -->
-  <script type="module" src="../dist/sunbird-pdf-player.js"></script>
+  <script type="module" src="../src/sunbird-pdf-player.ts"></script>
 
   <script>
     // ── Helpers ─────────────────────────────────────────────────────────────
@@ -312,7 +312,7 @@
         },
         metadata: {
           identifier: 'do_demo_001',
-          name: artifactUrl.includes('gita') ? 'Bhagavad Gita (sample)' : 'PDF Document',
+          name: artifactUrl.includes('sample') ? 'Sample PDF' : 'PDF Document',
           artifactUrl
         }
       };
