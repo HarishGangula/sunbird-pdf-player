@@ -66,6 +66,7 @@ export class SunbirdPdfPlayer extends LitElement {
   @state() private _showControls = true;
   @state() private _sideMenuOpen = false;
   @state() private _showInvalidPageTooltip = false;
+  @state() private _timeSpentLabel = '';
   // Incremented on each Replay to force pdf-viewer to remount via keyed()
   @state() private _loadKey = 0;
 
@@ -115,6 +116,7 @@ export class SunbirdPdfPlayer extends LitElement {
     this._pagesVisited = new Set();
     this._isEndEventRaised = false;
     this._sideMenuOpen = false;
+    this._timeSpentLabel = '';
     this._viewState = 'start';
     this._loadingProgress = 0;
     this._currentPage = this.playerConfig.config?.startFromPage || 1;
@@ -275,6 +277,7 @@ export class SunbirdPdfPlayer extends LitElement {
   private _raiseEndEvent() {
     if (this._isEndEventRaised) return;
     this._isEndEventRaised = true;
+    this._timeSpentLabel = this._getTimeSpent();
     const duration = Date.now() - this._startTime;
     telemetryService.end(
       duration,
@@ -514,7 +517,7 @@ export class SunbirdPdfPlayer extends LitElement {
             .userName=${this.playerConfig?.context?.userData?.firstName || ''}
             .pagesRead=${this._pagesVisited.size}
             .totalPages=${this._totalPages}
-            .timeSpentLabel=${this._getTimeSpent()}
+            .timeSpentLabel=${this._timeSpentLabel}
             .showExit=${this._sideMenuConfig.showExit ?? false}
             @actions=${this._handleAction}
           ></sb-player-end-page>
