@@ -25,36 +25,6 @@ export class Sidebar extends LitElement {
     );
   }
 
-  private async _handleShare() {
-    this._emit('SHARE');
-    try {
-      if (navigator.share) {
-        await navigator.share({
-          title: this.contentName || 'PDF Document',
-          url: this.pdfUrl || window.location.href,
-        });
-      } else {
-        await navigator.clipboard.writeText(this.pdfUrl || window.location.href);
-        // Brief visual feedback handled by parent via telemetry/toast
-      }
-    } catch {
-      // User cancelled share or clipboard denied
-    }
-  }
-
-  private _handleDownload() {
-    this._emit('DOWNLOAD_MENU');
-    if (!this.pdfUrl) return;
-    const a = document.createElement('a');
-    a.href = this.pdfUrl;
-    a.download = this.contentName
-      ? `${this.contentName}.pdf`
-      : 'document.pdf';
-    a.target = '_blank';
-    a.rel = 'noopener';
-    a.click();
-  }
-
   private _handlePrint() {
     this._emit('PRINT');
     if (!this.pdfUrl) return;
@@ -67,8 +37,6 @@ export class Sidebar extends LitElement {
 
   render() {
     const cfg = this.sideMenuConfig;
-    const showShare    = cfg.showShare    !== false;
-    const showDownload = cfg.showDownload !== false;
     const showPrint    = cfg.showPrint    !== false;
     const showReplay   = cfg.showReplay   !== false;
     const showExit     = cfg.showExit     === true; // off by default
@@ -112,8 +80,6 @@ export class Sidebar extends LitElement {
 
         <!-- Menu items -->
         <nav class="flex-1 overflow-y-auto py-2">
-          ${showShare ? this._menuItem('Share', 'SHARE_ACTION', this._handleShare.bind(this), iconShare()) : nothing}
-          ${showDownload ? this._menuItem('Download', 'DOWNLOAD', this._handleDownload.bind(this), iconDownload()) : nothing}
           ${showPrint ? this._menuItem('Print', 'PRINT', this._handlePrint.bind(this), iconPrint()) : nothing}
 
           ${(showReplay || showExit) ? html`
@@ -149,26 +115,6 @@ export class Sidebar extends LitElement {
 }
 
 // ── Icons ────────────────────────────────────────────────────────────────────
-function iconShare() {
-  return html`<svg xmlns="http://www.w3.org/2000/svg" viewBox="0 0 24 24" fill="none"
-    stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round"
-    width="18" height="18" aria-hidden="true">
-    <circle cx="18" cy="5" r="3"/><circle cx="6" cy="12" r="3"/><circle cx="18" cy="19" r="3"/>
-    <line x1="8.59" y1="13.51" x2="15.42" y2="17.49"/>
-    <line x1="15.41" y1="6.51" x2="8.59" y2="10.49"/>
-  </svg>`;
-}
-
-function iconDownload() {
-  return html`<svg xmlns="http://www.w3.org/2000/svg" viewBox="0 0 24 24" fill="none"
-    stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round"
-    width="18" height="18" aria-hidden="true">
-    <path d="M21 15v4a2 2 0 0 1-2 2H5a2 2 0 0 1-2-2v-4"/>
-    <polyline points="7 10 12 15 17 10"/>
-    <line x1="12" y1="15" x2="12" y2="3"/>
-  </svg>`;
-}
-
 function iconPrint() {
   return html`<svg xmlns="http://www.w3.org/2000/svg" viewBox="0 0 24 24" fill="none"
     stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round"

@@ -160,18 +160,8 @@ export class Header extends LitElement {
           ` : nothing}
         </div>
 
-        <!-- ── Right group: download + menu ──────────────────────────────── -->
+        <!-- ── Right group: menu ─────────────────────────────────────────── -->
         <div class="flex items-center gap-1">
-          <button
-            @click=${() => this._emit('DOWNLOAD')}
-            title="Download PDF"
-            aria-label="Download PDF"
-            style="border-radius:var(--pdf-button-radius);"
-            class="p-1.5 hover:bg-[var(--pdf-header-icon-hover-bg)] transition-colors"
-          >
-            ${iconDownload()}
-          </button>
-
           <button
             @click=${() => this._emit('TOGGLE_MENU')}
             title="More options"
@@ -226,16 +216,6 @@ function iconChevronRight() {
     stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round"
     width="18" height="18" style="color:var(--pdf-header-icon)">
     <path d="M9 18l6-6-6-6"/>
-  </svg>`;
-}
-
-function iconDownload() {
-  return html`<svg xmlns="http://www.w3.org/2000/svg" viewBox="0 0 24 24" fill="none"
-    stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round"
-    width="18" height="18" style="color:var(--pdf-header-icon)">
-    <path d="M21 15v4a2 2 0 0 1-2 2H5a2 2 0 0 1-2-2v-4"/>
-    <polyline points="7 10 12 15 17 10"/>
-    <line x1="12" y1="15" x2="12" y2="3"/>
   </svg>`;
 }
 

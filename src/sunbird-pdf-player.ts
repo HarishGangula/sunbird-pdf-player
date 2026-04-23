@@ -23,8 +23,6 @@ const DEFAULT_TOOLBAR: ToolBarConfig = {
 };
 
 const DEFAULT_SIDEMENU: SideMenuConfig = {
-  showShare: true,
-  showDownload: true,
   showReplay: true,
   showExit: false,
   showPrint: true,
@@ -222,9 +220,7 @@ export class SunbirdPdfPlayer extends LitElement {
         }
         break;
       }
-      case 'DOWNLOAD':
-        this._downloadPdf();
-        break;
+
       case 'TOGGLE_MENU':
         this._sideMenuOpen = !this._sideMenuOpen;
         telemetryService.interact(this._sideMenuOpen ? 'OPEN_MENU' : 'CLOSE_MENU', this._currentPage);
@@ -233,12 +229,7 @@ export class SunbirdPdfPlayer extends LitElement {
         this._sideMenuOpen = false;
         telemetryService.interact('CLOSE_MENU', this._currentPage);
         break;
-      case 'SHARE':
-        // Handled inside sidebar — just track telemetry
-        break;
-      case 'DOWNLOAD_MENU':
-        // Handled inside sidebar — telemetry tracked here
-        break;
+
       case 'PRINT':
         // Handled inside sidebar — just track telemetry
         break;
@@ -296,17 +287,7 @@ export class SunbirdPdfPlayer extends LitElement {
     this._raiseEndEvent();
   }
 
-  private _downloadPdf() {
-    const url = this.playerConfig?.metadata.artifactUrl;
-    if (!url) return;
-    const a = document.createElement('a');
-    a.href = url;
-    a.download = `${this.playerConfig?.metadata.name || 'document'}.pdf`;
-    a.target = '_blank';
-    a.rel = 'noopener';
-    a.click();
-    this._dispatchEvent('playerEvent', { type: 'DOWNLOAD' });
-  }
+
 
   private _dispatchEvent(name: string, detail: unknown) {
     this.dispatchEvent(

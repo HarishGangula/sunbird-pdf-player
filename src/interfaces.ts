@@ -52,8 +52,6 @@ export interface ToolBarConfig {
 }
 
 export interface SideMenuConfig {
-  showShare?: boolean;
-  showDownload?: boolean;
   showReplay?: boolean;
   showExit?: boolean;
   showPrint?: boolean;
