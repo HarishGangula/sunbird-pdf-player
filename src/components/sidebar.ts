@@ -44,7 +44,7 @@ export class Sidebar extends LitElement {
     return html`
       <!-- Backdrop -->
       <div
-        class="fixed inset-0 z-20 transition-opacity duration-200 ${this.open ? 'opacity-100 pointer-events-auto' : 'opacity-0 pointer-events-none'}"
+        class="absolute inset-0 z-20 transition-opacity duration-200 ${this.open ? 'opacity-100 pointer-events-auto' : 'opacity-0 pointer-events-none'}"
         style="background:rgba(0,0,0,0.4);"
         @click=${() => this._emit('CLOSE_MENU')}
         aria-hidden="true"
@@ -56,7 +56,7 @@ export class Sidebar extends LitElement {
         aria-label="Player options"
         aria-modal="true"
         style="background:var(--pdf-sidebar-bg);color:var(--pdf-sidebar-text);border-left:1px solid var(--pdf-sidebar-border);"
-        class="fixed top-0 right-0 h-full w-64 z-30 flex flex-col shadow-2xl transition-transform duration-200 ${this.open ? 'translate-x-0' : 'translate-x-full'}"
+        class="absolute top-0 right-0 h-full w-64 z-30 flex flex-col shadow-2xl transition-transform duration-200 ${this.open ? 'translate-x-0' : 'translate-x-full'}"
       >
         <!-- Header -->
         <div
