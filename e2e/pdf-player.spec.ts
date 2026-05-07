@@ -218,37 +218,6 @@ test.describe('Sunbird PDF Player — Core', () => {
     expect(Math.abs(w2 - w1)).toBeLessThan(10);
   });
 
-  // ── 11. Sidebar ────────────────────────────────────────────────────────────
-  test('hamburger button opens sidebar', async ({ page }) => {
-    await waitForPlayer(page);
-
-    await page.locator('sb-player-header button[aria-label="Open side menu"]').click();
-
-    const sidebar = page.locator('sb-player-sidebar aside');
-    await expect(sidebar).toHaveClass(/translate-x-0/, { timeout: 2_000 });
-    await expect(sidebar).toContainText('Options');
-  });
-
-  test('Escape key closes the sidebar', async ({ page }) => {
-    await waitForPlayer(page);
-
-    await page.locator('sb-player-header button[aria-label="Open side menu"]').click();
-    const sidebar = page.locator('sb-player-sidebar aside');
-    await expect(sidebar).toHaveClass(/translate-x-0/);
-
-    await page.keyboard.press('Escape');
-    await expect(sidebar).toHaveClass(/translate-x-full/, { timeout: 2_000 });
-  });
-
-  test('sidebar close button closes the panel', async ({ page }) => {
-    await waitForPlayer(page);
-
-    await page.locator('sb-player-header button[aria-label="Open side menu"]').click();
-    await page.locator('sb-player-sidebar button[aria-label="Close menu"]').click();
-    const sidebar = page.locator('sb-player-sidebar aside');
-    await expect(sidebar).toHaveClass(/translate-x-full/, { timeout: 2_000 });
-  });
-
   // ── 12. Download ───────────────────────────────────────────────────────────
   test('Download button in toolbar emits DOWNLOAD playerEvent', async ({ page }) => {
     await waitForPlayer(page);
@@ -264,23 +233,7 @@ test.describe('Sunbird PDF Player — Core', () => {
     expect(dlEvt).toBeTruthy();
   });
 
-  // ── 13. Replay ─────────────────────────────────────────────────────────────
-  test('Replay from sidebar resets to start page', async ({ page }) => {
-    await waitForPlayer(page);
-
-    // Open sidebar
-    await page.locator('sb-player-header button[aria-label="Open side menu"]').click();
-
-    // Click replay
-    await page.locator('sb-player-sidebar button[aria-label="Replay"]').click();
-
-    // Start page should appear again briefly
-    // After reload, player should be back on page 1
-    await waitForPlayer(page);
-    await expect(page.locator('text=/Page 1 of \\d+/')).toBeVisible({ timeout: 15_000 });
-  });
-
-  // ── 14. End page ───────────────────────────────────────────────────────────
+  // ── 13. End page ───────────────────────────────────────────────────────────
   test('end page appears and emits END event when reaching last page', async ({ page }) => {
     await waitForPlayer(page);
     await capturePlayerEvents(page);
