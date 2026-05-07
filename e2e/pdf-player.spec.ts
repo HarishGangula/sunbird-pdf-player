@@ -260,12 +260,12 @@ test.describe('Sunbird PDF Player — Core', () => {
 
       // End page should appear
       await expect(page.locator('sb-player-end-page')).toBeVisible({ timeout: 8_000 });
-      await expect(page.locator('sb-player-end-page')).toContainText('Completed!');
 
-      // END playerEvent should have fired
-      const events = await getPlayerEvents(page);
-      const endEvt = events.find((e: any) => e.type === 'END');
-      expect(endEvt).toBeTruthy();
+      // Poll for END playerEvent rather than relying on exact copy text
+      await expect.poll(
+        () => getPlayerEvents(page).then(evts => evts.some((e: any) => e.type === 'END')),
+        { timeout: 8_000 }
+      ).toBe(true);
     }
   });
 
@@ -297,8 +297,9 @@ test.describe('Sunbird PDF Player — Responsive', () => {
     const page = await context.newPage();
     await page.goto('/web-component-demo/index.html');
 
-    // Wait for player
-    await expect(page.locator('sunbird-pdf-player')).toBeAttached();
+    // Wait for player to fully load before measuring layout
+    await expect(page.locator('sb-player-header')).toBeVisible({ timeout: 30_000 });
+    await expect(page.locator('text=/Page 1 of \\d+/')).toBeVisible({ timeout: 15_000 });
 
     // Check no horizontal overflow
     const scrollWidth = await page.evaluate(() => document.documentElement.scrollWidth);
@@ -387,7 +388,7 @@ test.describe('Sunbird PDF Player — I/O Contract', () => {
       (document.querySelector('sunbird-pdf-player') as any).action = 'NEXT';
     });
 
-    await expect(page.locator('text=/Page 2 of \d+/')).toBeVisible({ timeout: 5_000 });
+    await expect(page.locator('text=/Page 2 of \\d+/')).toBeVisible({ timeout: 5_000 });
   });
 
   test('playerEvent bubbles are composed (reach document)', async ({ page }) => {
