@@ -160,18 +160,6 @@ export class Header extends LitElement {
           ` : nothing}
         </div>
 
-        <!-- ── Right group: menu ─────────────────────────────────────────── -->
-        <div class="flex items-center gap-1">
-          <button
-            @click=${() => this._emit('TOGGLE_MENU')}
-            title="More options"
-            aria-label="Open side menu"
-            style="border-radius:var(--pdf-button-radius);"
-            class="p-1.5 hover:bg-[var(--pdf-header-icon-hover-bg)] transition-colors"
-          >
-            ${iconMenu()}
-          </button>
-        </div>
       </header>
     `;
   }
@@ -216,15 +204,5 @@ function iconChevronRight() {
     stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round"
     width="18" height="18" style="color:var(--pdf-header-icon)">
     <path d="M9 18l6-6-6-6"/>
-  </svg>`;
-}
-
-function iconMenu() {
-  return html`<svg xmlns="http://www.w3.org/2000/svg" viewBox="0 0 24 24" fill="none"
-    stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round"
-    width="18" height="18" style="color:var(--pdf-header-icon)">
-    <line x1="3" y1="6" x2="21" y2="6"/>
-    <line x1="3" y1="12" x2="21" y2="12"/>
-    <line x1="3" y1="18" x2="21" y2="18"/>
   </svg>`;
 }

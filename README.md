@@ -21,7 +21,6 @@ Built with [Lit](https://lit.dev/), [PDF.js](https://mozilla.github.io/pdf.js/),
   - [Metadata](#metadata)
   - [Telemetry context](#telemetry-context)
   - [Toolbar config](#toolbar-config)
-  - [Side menu config](#side-menu-config)
 - [Outputs](#outputs)
   - [playerEvent](#playerevent)
   - [telemetryEvent](#telemetryevent)
@@ -42,7 +41,6 @@ Built with [Lit](https://lit.dev/), [PDF.js](https://mozilla.github.io/pdf.js/),
 - **Touch / swipe** — horizontal swipe triggers next/previous page
 - **Full keyboard navigation** — Arrow keys, Page Up/Down, +/−, Escape
 - **Config-driven toolbar** — show/hide zoom, rotate, page input, prev/next
-- **Side menu** — share, download, print, replay, exit (all individually togglable)
 - **CSS custom-property theming** — override colours from a parent portal or WebView without touching the component source
 - **Full telemetry** — start, end, impression, interact, heartbeat, error events via Sunbird Telemetry SDK
 - **PDF.js worker bundled locally** — no CDN dependency, works offline
@@ -275,20 +273,13 @@ const playerConfig = {
     userData: { firstName: 'Guest', lastName: '' }
   },
 
-  // ── Toolbar + side menu toggles ──────────────────────────────────────────
+  // ── Toolbar toggles ───────────────────────────────────────────────────────
   config: {
     toolBar: {
       showZoomButtons:   true,   // Zoom in / zoom out buttons
       showPagesButton:   true,   // Go-to-page input + page count
       showPagingButtons: true,   // Prev / next page buttons in toolbar
       showRotateButton:  true    // Rotate clockwise button
-    },
-    sideMenu: {
-      showShare:    true,        // Share button (navigator.share / clipboard)
-      showDownload: true,        // Download PDF button
-      showReplay:   true,        // Replay (restart) button
-      showExit:     false,       // Exit button (default: hidden)
-      showPrint:    true         // Print button
     },
     startFromPage: 1             // Open on this page number (default: 1)
   },
@@ -352,18 +343,6 @@ All fields are optional and default to `true` unless noted.
 
 ---
 
-### Side menu config
-
-| Property | Default | Description |
-|---|---|---|
-| `showShare` | `true` | Share URL via `navigator.share` or copy to clipboard |
-| `showDownload` | `true` | Download the PDF file |
-| `showPrint` | `true` | Print the PDF |
-| `showReplay` | `true` | Restart from page 1 |
-| `showExit` | `false` | Exit the player (emits `EXIT` playerEvent) |
-
----
-
 ## Outputs
 
 Both events bubble and are composed (`bubbles: true, composed: true`), so they can be listened to on any ancestor element including `document`.
@@ -381,7 +360,7 @@ player.addEventListener('playerEvent', (e) => {
 | `START` | `{ duration: number }` | PDF fully loaded, player view shown |
 | `PAGE_CHANGE` | `{ pageNumber: number, totalPages: number }` | Visible page changes |
 | `END` | `{ duration: number }` | Last page reached, exit clicked, or tab closed |
-| `EXIT` | — | User clicks Exit in the side menu |
+| `EXIT` | — | User triggers exit (via `player.action = 'EXIT'`) |
 | `DOWNLOAD` | — | User triggers a download |
 | `ERROR` | `{ err, errtype, stacktrace }` | PDF failed to load |
 
@@ -429,7 +408,6 @@ When the player has focus (or any of its children), these keys are active:
 | `ArrowLeft` / `PageUp` | Previous page |
 | `+` / `=` | Zoom in |
 | `-` | Zoom out |
-| `Escape` | Close the side menu |
 
 ---
 
@@ -457,12 +435,6 @@ sunbird-pdf-player {
   /* Status bar (bottom) */
   --pdf-footer-bg:           #1f2937;
   --pdf-footer-text:         #d1d5db;
-
-  /* Side menu panel */
-  --pdf-sidebar-bg:          #ffffff;
-  --pdf-sidebar-text:        #374151;
-  --pdf-sidebar-border:      #e5e7eb;
-  --pdf-sidebar-item-hover:  #f9fafb;
 
   /* Floating nav arrows */
   --pdf-nav-bg:              rgba(0,0,0,0.25);

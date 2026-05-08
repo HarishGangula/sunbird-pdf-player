@@ -54,6 +54,7 @@ export class PdfViewer extends LitElement {
   private _touchStartX = 0;
   private _touchStartY = 0;
   private _currentPage = 1;
+  private _pendingPage: number | null = null;
   private _endFired = false;
   private _loadAbortController: AbortController | null = null;
 
@@ -138,6 +139,11 @@ export class PdfViewer extends LitElement {
     if (!wrapper) return;
     // Immediately render it so it's visible when scrolled to
     this._renderPageOntoWrapper(clamped, wrapper);
+    if (clamped !== this._currentPage) {
+      this._pendingPage = clamped;
+      this._currentPage = clamped;
+      this._emit('pagechanging', { pageNumber: clamped });
+    }
     wrapper.scrollIntoView({ behavior: 'smooth', block: 'start' });
   }
 
@@ -378,6 +384,13 @@ export class PdfViewer extends LitElement {
       }
     });
 
+    if (this._pendingPage !== null) {
+      if (activePage === this._pendingPage) {
+        this._pendingPage = null;
+      } else {
+        return;
+      }
+    }
     if (activePage !== this._currentPage) {
       this._currentPage = activePage;
       this._emit('pagechanging', { pageNumber: activePage });
