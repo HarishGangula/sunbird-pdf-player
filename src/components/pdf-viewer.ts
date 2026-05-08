@@ -138,7 +138,8 @@ export class PdfViewer extends LitElement {
     if (!wrapper) return;
     // Immediately render it so it's visible when scrolled to
     this._renderPageOntoWrapper(clamped, wrapper);
-    wrapper.scrollIntoView({ behavior: 'smooth', block: 'start' });
+    wrapper.scrollIntoView({ behavior: 'instant', block: 'start' });
+    this._updateCurrentPage();
   }
 
   public clampedZoom(delta: number): number {

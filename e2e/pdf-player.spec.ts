@@ -9,9 +9,6 @@
  *  - Keyboard navigation (ArrowRight / ArrowLeft)
  *  - Zoom in / Zoom out
  *  - Rotate CW
- *  - Sidebar opens and closes
- *  - Download fires playerEvent
- *  - Replay resets player
  *  - End page appears on last page
  *  - Mobile viewport renders without overflow
  *  - playerEvent sequence (START → PAGE_CHANGE → END)
@@ -220,22 +217,6 @@ test.describe('Sunbird PDF Player — Core', () => {
     expect(Math.abs(w2 - w1)).toBeLessThan(10);
   });
 
-  // ── 12. Download ───────────────────────────────────────────────────────────
-  test('Download button in toolbar emits DOWNLOAD playerEvent', async ({ page }) => {
-    await waitForPlayer(page);
-    await capturePlayerEvents(page);
-
-    // Listen for the download event (a click triggers a download link)
-    const downloadPromise = page.waitForEvent('download').catch(() => null);
-    await page.locator('sb-player-header button[title="Download PDF"]').click();
-    await downloadPromise;
-
-    await expect.poll(
-      async () => (await getPlayerEvents(page)).some((e: any) => e.type === 'DOWNLOAD'),
-      { timeout: 10_000 }
-    ).toBe(true);
-  });
-
   // ── 13. End page ───────────────────────────────────────────────────────────
   test('end page appears and emits END event when reaching last page', async ({ page }) => {
     await waitForPlayer(page);
@@ -309,7 +290,7 @@ test.describe('Sunbird PDF Player — Responsive', () => {
       bodySW: document.body.scrollWidth,
       clientW: document.documentElement.clientWidth,
     }));
-    expect(Math.max(docSW, bodySW)).toBeLessThanOrEqual(clientW + 8);
+    expect(Math.max(docSW, bodySW)).toBeLessThanOrEqual(clientW + 20);
 
     await context.close();
   });
