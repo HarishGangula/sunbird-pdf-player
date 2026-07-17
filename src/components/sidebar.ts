@@ -42,21 +42,21 @@ export class Sidebar extends LitElement {
     const showExit     = cfg.showExit     === true; // off by default
 
     return html`
-      <!-- Backdrop -->
+      <!-- Backdrop with glassmorphic blur -->
       <div
-        class="absolute inset-0 z-20 transition-opacity duration-200 ${this.open ? 'opacity-100 pointer-events-auto' : 'opacity-0 pointer-events-none'}"
-        style="background:rgba(0,0,0,0.4);"
+        class="absolute inset-0 z-20 transition-all duration-300 ${this.open ? 'opacity-100 pointer-events-auto backdrop-blur-[4px]' : 'opacity-0 pointer-events-none'}"
+        style="background:rgba(15,23,42,0.45);"
         @click=${() => this._emit('CLOSE_MENU')}
         aria-hidden="true"
       ></div>
 
-      <!-- Panel -->
+      <!-- Panel with subtle shadow/border visual enhancements -->
       <aside
         role="dialog"
         aria-label="Player options"
         aria-modal="true"
         style="background:var(--pdf-sidebar-bg);color:var(--pdf-sidebar-text);border-left:1px solid var(--pdf-sidebar-border);"
-        class="absolute top-0 right-0 h-full w-64 z-30 flex flex-col shadow-2xl transition-transform duration-200 ${this.open ? 'translate-x-0' : 'translate-x-full'}"
+        class="absolute top-0 right-0 h-full w-64 z-30 flex flex-col shadow-[-8px_0_30px_rgba(0,0,0,0.15)] transition-transform duration-300 ease-out ${this.open ? 'translate-x-0' : 'translate-x-full'}"
       >
         <!-- Header -->
         <div
