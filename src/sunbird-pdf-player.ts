@@ -356,11 +356,7 @@ export class SunbirdPdfPlayer extends LitElement {
 
   private _handleTap() {
     if (!this._isTouchDevice) return;
-    this._showControls = true;
-    if (this._controlsHideTimer) clearTimeout(this._controlsHideTimer);
-    this._controlsHideTimer = setTimeout(() => {
-      this._showControls = false;
-    }, 3000);
+    this._showControls = !this._showControls;
   }
 
   // ── Invalid page tooltip ─────────────────────────────────────────────────

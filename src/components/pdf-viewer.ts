@@ -5,7 +5,6 @@ import type { PDFDocumentProxy } from 'pdfjs-dist';
 
 const ZOOM_MIN = 50;
 const ZOOM_MAX = 300;
-const BUFFER_PAGES = 2; // pages above and below viewport to pre-render
 
 // Module-level cache so pdfjs-dist is loaded only once across all component instances
 // eslint-disable-next-line @typescript-eslint/no-explicit-any
@@ -260,17 +259,6 @@ export class PdfViewer extends LitElement {
           const pageNo = Number(wrapper.dataset.page);
           if (entry.isIntersecting) {
             this._renderPageOntoWrapper(pageNo, wrapper);
-            // Render buffer pages ahead/behind
-            for (let b = 1; b <= BUFFER_PAGES; b++) {
-              const prevEl = this._container?.querySelector<HTMLElement>(`#page-${pageNo - b}`);
-              const nextEl = this._container?.querySelector<HTMLElement>(`#page-${pageNo + b}`);
-              if (prevEl && !this._renderedPages.has(pageNo - b)) {
-                this._renderPageOntoWrapper(pageNo - b, prevEl);
-              }
-              if (nextEl && !this._renderedPages.has(pageNo + b)) {
-                this._renderPageOntoWrapper(pageNo + b, nextEl);
-              }
-            }
             // Check if this is the last page — fire pageend.
             // Guard: skip for single-page documents. Their only page is always
             // visible, so the observer fires immediately after load and the player
@@ -285,7 +273,7 @@ export class PdfViewer extends LitElement {
       },
       {
         root: this._container,
-        rootMargin: '200px 0px',
+        rootMargin: '450px 0px', // Natively pre-render/buffer pages within 450px of viewport
         threshold: 0.01,
       }
     );
